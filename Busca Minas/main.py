@@ -16,20 +16,20 @@ class Tablero:
         self.cantidad_total_de_bombas = cantidad_de_bombas
         self.casillas : list[list[Casilla]]= []
         self.explotado = False
+        self.generado = False
 
         for c in range(columnas):
             columna = []
             for f in range(filas):
                 columna.append(Casilla())
             self.casillas.append(columna)
-        self.generar_bombas()
 
-    def generar_bombas(self):
+    def generar_bombas(self, evitar : tuple[int,int] | None = None):
         cantidad_puesta = 0
         while cantidad_puesta < self.cantidad_total_de_bombas:
             x = random.randrange(self.columnas)
             y = random.randrange(self.filas)
-            if not self.casillas[x][y].mina:
+            if not self.casillas[x][y].mina and (x,y) != evitar:
                 self.casillas[x][y].mina = True
                 self.generar_proximidades(x,y)
                 cantidad_puesta = cantidad_puesta + 1
@@ -117,12 +117,19 @@ def main():
                 my = event.pos[1] // 32
                 match event.button:
                     case 1:
+                        if not tablero.generado:
+                            tablero.generado = True
+                            tablero.generar_bombas((mx,my))
                         tablero.descubrir_casilla(mx, my)
                         if not tablero.casillas[mx][my].marcada:
                             tablero.casillas[mx][my].descubierta = True
                     case 3:
                         if not tablero.casillas[mx][my].descubierta:
                             tablero.casillas[mx][my].marcada = not tablero.casillas[mx][my].marcada
+
+        keys = pygame.key.get_just_pressed()
+        if keys[pygame.K_r]:
+            tablero = Tablero(filas, columnas, cantidad_de_bombas)
 
         pantalla.fill("blue")
         
