@@ -15,7 +15,7 @@ class Tablero:
         self.columnas = columnas
         self.cantidad_total_de_bombas = cantidad_de_bombas
         self.casillas : list[list[Casilla]]= []
-        self.explotado = False
+        self.explosion = False
         self.generado = False
 
         for c in range(columnas):
@@ -49,7 +49,7 @@ class Tablero:
 
         # Game over
         if self.casillas[_x][_y].mina:
-            self.explotado = True
+            self.explosion = True
             return
 
         # Si hay alguna mina cerca, solo se revela esta casilla
@@ -61,21 +61,43 @@ class Tablero:
                     if x >= 0 and x < self.columnas:
                         for y in range(_y-1, _y+2):
                             if y >= 0 and y < self.filas:
-                                self.descubrir_casilla(x,y)            
+                                self.descubrir_casilla(x,y)     
+
+    def explotar_minas(self):
+        for x in range(self.columnas):
+            for y in range(self.filas):
+                if self.casillas[x][y].mina and not self.casillas[x][y].marcada:
+                    self.casillas[x][y].descubierta = True
+
+    def cantidad_descubiertas_limpias(self):
+        cantidad = 0
+        for columna in self.casillas:
+            for casilla in columna:
+                if casilla.descubierta and not casilla.mina:
+                    cantidad = cantidad + 1
+        return cantidad
+                     
 
 def main():
     pygame.init()
 
     running = True
+    game_over = False
+
     filas = 16
     columnas = 16
-    tamanio_de_casilla = 32
     cantidad_de_bombas = 40
+    casillas_limpias = (filas * columnas) - cantidad_de_bombas
+
+    tamanio_de_casilla = 32
+    pantalla_ancho = filas * tamanio_de_casilla
+    pantalla_alto = columnas * tamanio_de_casilla
 
     recursos = {}
     recursos["bomba"] = pygame.image.load("assets/Bomba.png")
     recursos["marcador"] = pygame.image.load("assets/Marcador.png")
     recursos["font"] = pygame.font.Font("assets/bytebounce.medium.ttf", size=50)
+    recursos["font2"] = pygame.font.Font("assets/bytebounce.medium.ttf", size=20)
 
     recursos["casilla_cubierta_1"] = pygame.surface.Surface((32,32))
     recursos["casilla_cubierta_1"].fill("darkolivegreen3")
@@ -86,6 +108,9 @@ def main():
     recursos["casilla_descubierta_1"].fill("burlywood3")
     recursos["casilla_descubierta_2"] = pygame.surface.Surface((32,32))
     recursos["casilla_descubierta_2"].fill("burlywood2")
+
+    recursos["game_over"]= pygame.image.load("assets/game_over.png")
+    recursos["ganador"]= pygame.image.load("assets/ganador.png")
 
     colores_numeros = ["blue", "green", "red", "blue4", "darkred", "cyan4", "black", "dimgrey"]
     recursos["0"] = pygame.surface.Surface((32,32), pygame.SRCALPHA)
@@ -99,20 +124,20 @@ def main():
 
     pygame.display.set_caption("Busca minas")
     pygame.display.set_icon(recursos["bomba"])
-    pantalla_ancho = filas * tamanio_de_casilla
-    pantalla_alto = columnas * tamanio_de_casilla
+    
     pantalla = pygame.display.set_mode((pantalla_ancho, pantalla_alto))
     
     clock = pygame.time.Clock()
 
     tablero = Tablero(filas, columnas, cantidad_de_bombas)
+    tablero_limpio = False
 
     # Loop
     while running:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
-            if event.type == pygame.MOUSEBUTTONDOWN:
+            if event.type == pygame.MOUSEBUTTONDOWN and not game_over:
                 mx = event.pos[0] // 32
                 my = event.pos[1] // 32
                 match event.button:
@@ -121,17 +146,25 @@ def main():
                             tablero.generado = True
                             tablero.generar_bombas((mx,my))
                         tablero.descubrir_casilla(mx, my)
-                        if not tablero.casillas[mx][my].marcada:
-                            tablero.casillas[mx][my].descubierta = True
                     case 3:
                         if not tablero.casillas[mx][my].descubierta:
                             tablero.casillas[mx][my].marcada = not tablero.casillas[mx][my].marcada
 
         keys = pygame.key.get_just_pressed()
-        if keys[pygame.K_r]:
+        
+        if keys[pygame.K_r] and (game_over or tablero_limpio):
             tablero = Tablero(filas, columnas, cantidad_de_bombas)
+            game_over = False
+            tablero_limpio = False
 
-        pantalla.fill("blue")
+        if tablero.explosion:
+            tablero.explotar_minas()
+            game_over = True
+
+        if tablero.cantidad_descubiertas_limpias() == casillas_limpias:
+            tablero_limpio = True
+
+        pantalla.fill("purple")
         
         for c in range(columnas):
                 for f in range(filas):
@@ -150,8 +183,12 @@ def main():
                             pantalla.blit(recursos["bomba"], coordenadas)
                         else:
                             pantalla.blit(recursos[str(tablero.casillas[c][f].proximidades)], coordenadas)
+        if game_over:
+            pantalla.blit(recursos["game_over"], recursos["game_over"].get_rect(center= (pantalla_ancho//2, pantalla_alto//2)))
+        if tablero_limpio: 
+            pantalla.blit(recursos["ganador"], recursos["ganador"].get_rect(center= (pantalla_ancho//2, pantalla_alto//2)))
         pygame.display.flip()
-        print(clock.tick(60))
+        clock.tick(60)
 
     
 
