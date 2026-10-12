@@ -18,6 +18,7 @@ class Tablero:
         self.casillas : list[list[Casilla]] = []
         self.explosion : bool = False
         self.generado : bool = False
+        self.casillas_limpias : int = (self.filas * self.columnas) - self.cantidad_total_de_bombas
 
         for c in range(columnas):
             columna : list[Casilla] = []
@@ -34,6 +35,7 @@ class Tablero:
                 self.casillas[x][y].mina = True
                 self.generar_proximidades(x,y)
                 cantidad_puesta = cantidad_puesta + 1
+        self.generado = True
                 
     def generar_proximidades(self, _x : int, _y : int) -> None:
         for x in range(_x-1, _x+2):
@@ -54,7 +56,7 @@ class Tablero:
 
         # Game over
         if self.casillas[_x][_y].mina:
-            self.explosion = True
+            self.explotar_minas()
             return
 
         # Si hay alguna mina cerca, solo se revela esta casilla
@@ -73,6 +75,7 @@ class Tablero:
             for y in range(self.filas):
                 if self.casillas[x][y].mina and not self.casillas[x][y].marcada:
                     self.casillas[x][y].descubierta = True
+        self.explosion = True
 
     def cantidad_descubiertas_limpias(self) -> int:
         cantidad : int = 0
@@ -82,123 +85,123 @@ class Tablero:
                     cantidad = cantidad + 1
         return cantidad
 
-                     
+    def limpio(self) -> bool:
+        return self.cantidad_descubiertas_limpias() == self.casillas_limpias
 
-def main():
-    pygame.init()
+class Juego:
+    def __init__(self) -> None:
+        pygame.init()
+        self.running : bool = True
+        self.game_over : bool = False
     
-    running : bool = True
-    game_over : bool = False
-
-    filas : int = 16
-    columnas : int = 16
-    cantidad_de_bombas : int = 40
-    casillas_limpias : int = (filas * columnas) - cantidad_de_bombas
-
-    tamanio_de_casilla : int = 32
-    pantalla_ancho : int = filas * tamanio_de_casilla
-    pantalla_alto : int = columnas * tamanio_de_casilla
-
-    pygame.display.set_caption("Busca minas")
-    pantalla = pygame.display.set_mode((pantalla_ancho, pantalla_alto))
-
-    recursos : dict[str, pygame.Surface ]= {}
-    recursos["bomba"] = pygame.image.load("assets/Bomba.png").convert_alpha()
-    recursos["marcador"] = pygame.image.load("assets/Marcador.png")
-    recursos["font"] = pygame.font.Font("assets/bytebounce.medium.ttf", size=50)
-    recursos["font2"] = pygame.font.Font("assets/bytebounce.medium.ttf", size=20)
-
-    recursos["casilla_cubierta_1"] = pygame.Surface((32,32))
-    recursos["casilla_cubierta_1"].fill("darkolivegreen3")
-    recursos["casilla_cubierta_2"] = pygame.Surface((32,32))
-    recursos["casilla_cubierta_2"].fill("darkolivegreen2")
+        self.filas : int = 16
+        self.columnas : int = 16
+        self.cantidad_de_bombas : int = 40
     
-    recursos["casilla_descubierta_1"] = pygame.Surface((32,32))
-    recursos["casilla_descubierta_1"].fill("burlywood3")
-    recursos["casilla_descubierta_2"] = pygame.Surface((32,32))
-    recursos["casilla_descubierta_2"].fill("burlywood2")
+        self.tamanio_de_casilla : int = 32
+        self.pantalla_ancho : int = self.filas * self.tamanio_de_casilla
+        self.pantalla_alto : int = self.columnas * self.tamanio_de_casilla
 
-    recursos["game_over"]= pygame.image.load("assets/game_over.png")
-    recursos["ganador"]= pygame.image.load("assets/ganador.png")
+        pygame.display.set_caption("Busca minas")
+        self.pantalla = pygame.display.set_mode((self.pantalla_ancho, self.pantalla_alto))
 
-    colores_numeros : list[str] = ["blue", "green", "red", "blue4", "darkred", "cyan4", "black", "dimgrey"]
-    recursos["0"] = pygame.Surface((32,32), pygame.SRCALPHA)
+        self.recursos : dict[str, pygame.Surface ]= {}
 
-    for i in range(8):
-        numero : int = i + 1
-        numero_imagen : pygame.Surface = recursos["font"].render( text= str(numero), antialias= True, color= colores_numeros[i])
-        fondo : pygame.Surface = pygame.Surface( size= (32,32), flags= pygame.SRCALPHA)
-        fondo.blit(numero_imagen, numero_imagen.get_rect(center=(tamanio_de_casilla // 2 , tamanio_de_casilla // 2)))
-        recursos[str(numero)] = fondo
-
-    pygame.display.set_icon(recursos["bomba"])
+        self.recursos["bomba"] = pygame.image.load("assets/Bomba.png").convert_alpha()
+        self.recursos["marcador"] = pygame.image.load("assets/Marcador.png").convert_alpha()
+        self.recursos["font"] = pygame.font.Font("assets/bytebounce.medium.ttf", size=50)
+        self.recursos["font2"] = pygame.font.Font("assets/bytebounce.medium.ttf", size=20)
     
-    reloj = pygame.time.Clock()
+        self.recursos["casilla_cubierta_1"] = pygame.Surface((32,32)).convert()
+        self.recursos["casilla_cubierta_1"].fill("darkolivegreen3")
+        self.recursos["casilla_cubierta_2"] = pygame.Surface((32,32)).convert()
+        self.recursos["casilla_cubierta_2"].fill("darkolivegreen2")
+        
+        self.recursos["casilla_descubierta_1"] = pygame.Surface((32,32)).convert()
+        self.recursos["casilla_descubierta_1"].fill("burlywood3")
+        self.recursos["casilla_descubierta_2"] = pygame.Surface((32,32)).convert()
+        self.recursos["casilla_descubierta_2"].fill("burlywood2")
+    
+        self.recursos["game_over"]= pygame.image.load("assets/game_over.png").convert()
+        self.recursos["ganador"]= pygame.image.load("assets/ganador.png").convert()
+    
+        colores_numeros : list[str] = ["blue", "green", "red", "blue4", "darkred", "cyan4", "black", "dimgrey"]
+        self.recursos["0"] = pygame.Surface((32,32), pygame.SRCALPHA).convert_alpha()
+    
+        for i in range(8):
+            numero : int = i + 1
+            numero_imagen : pygame.Surface = self.recursos["font"].render( text= str(numero), antialias= True, color= colores_numeros[i])
+            fondo : pygame.Surface = pygame.Surface( size= (32,32), flags= pygame.SRCALPHA)
+            fondo.blit(numero_imagen, numero_imagen.get_rect(center=(self.tamanio_de_casilla // 2 , self.tamanio_de_casilla // 2)))
+            self.recursos[str(numero)] = fondo.convert_alpha()
+    
+        pygame.display.set_icon(self.recursos["bomba"])
+        
+        self.reloj = pygame.time.Clock()
+    
+        self.tablero : Tablero = Tablero(self.filas, self.columnas, self.cantidad_de_bombas)
+        return
 
-    tablero : Tablero = Tablero(filas, columnas, cantidad_de_bombas)
-    tablero_limpio : bool = False
+    def bucle_principal(self):
+        while self.running:
+            self.input()
+            self.logica()
+            self.dibujar()
+            self.reloj.tick(60)
+        pygame.quit()
 
-    # Loop
-    while running:
+    def input(self):
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                running : bool = False
-            if event.type == pygame.MOUSEBUTTONDOWN and not game_over:
+                self.running : bool = False
+            if event.type == pygame.MOUSEBUTTONDOWN and not self.game_over:
                 mx : int = event.pos[0] // 32
                 my : int = event.pos[1] // 32
                 match event.button:
                     case 1:
-                        if not tablero.generado:
-                            tablero.generado = True
-                            tablero.generar_bombas((mx,my))
-                        tablero.descubrir_casilla(mx, my)
+                        if not self.tablero.generado:
+                            self.tablero.generar_bombas((mx,my))
+                        self.tablero.descubrir_casilla(mx, my)
                     case 3:
-                        tablero.marcar_casilla(mx, my)
+                        self.tablero.marcar_casilla(mx, my)
 
         keys = pygame.key.get_just_pressed()
         
-        if keys[pygame.K_r] and (game_over or tablero_limpio):
-            tablero = Tablero(filas, columnas, cantidad_de_bombas)
-            game_over = False
-            tablero_limpio = False
+        if keys[pygame.K_r] and (self.game_over or self.tablero.limpio()):
+            self.tablero = Tablero(self.filas, self.columnas, self.cantidad_de_bombas)
+            self.game_over = False
 
-        if tablero.explosion:
-            tablero.explotar_minas()
-            game_over = True
+    def logica(self):
+        if self.tablero.explosion:
+            self.tablero.explotar_minas()
+            self.game_over = True
 
-        if tablero.cantidad_descubiertas_limpias() == casillas_limpias:
-            tablero_limpio = True
-
-        pantalla.fill("purple")
+    def dibujar(self):
+        self.pantalla.fill("purple")
         
-        for c in range(columnas):
-                for f in range(filas):
+        for c in range(self.columnas):
+                for f in range(self.filas):
 
                     coordenadas : tuple[int,int] = (c*32, f*32)
                     paridad : bool = ((c+f)%2 == 0)
-                    if not tablero.casillas[c][f].descubierta :
-                        terreno : pygame.Surface = recursos["casilla_cubierta_1"] if paridad else recursos["casilla_cubierta_2"]
-                        pantalla.blit(terreno, coordenadas)
-                        if tablero.casillas[c][f].marcada:
-                            pantalla.blit(recursos["marcador"], coordenadas)
+                    if not self.tablero.casillas[c][f].descubierta :
+                        terreno : pygame.Surface = self.recursos["casilla_cubierta_1"] if paridad else self.recursos["casilla_cubierta_2"]
+                        self.pantalla.blit(terreno, coordenadas)
+                        if self.tablero.casillas[c][f].marcada:
+                            self.pantalla.blit(self.recursos["marcador"], coordenadas)
                     else:
-                        terreno : pygame.Surface = recursos["casilla_descubierta_1"] if paridad else recursos["casilla_descubierta_2"]
-                        pantalla.blit(terreno, coordenadas)
-                        if tablero.casillas[c][f].mina:
-                            pantalla.blit(recursos["bomba"], coordenadas)
+                        terreno : pygame.Surface = self.recursos["casilla_descubierta_1"] if paridad else self.recursos["casilla_descubierta_2"]
+                        self.pantalla.blit(terreno, coordenadas)
+                        if self.tablero.casillas[c][f].mina:
+                            self.pantalla.blit(self.recursos["bomba"], coordenadas)
                         else:
-                            pantalla.blit(recursos[str(tablero.casillas[c][f].proximidades)], coordenadas)
-        if game_over:
-            pantalla.blit(recursos["game_over"], recursos["game_over"].get_rect(center= (pantalla_ancho//2, pantalla_alto//2)))
-        if tablero_limpio: 
-            pantalla.blit(recursos["ganador"], recursos["ganador"].get_rect(center= (pantalla_ancho//2, pantalla_alto//2)))
+                            self.pantalla.blit(self.recursos[str(self.tablero.casillas[c][f].proximidades)], coordenadas)
+        if self.game_over:
+            self.pantalla.blit(self.recursos["game_over"], self.recursos["game_over"].get_rect(center= (self.pantalla_ancho//2, self.pantalla_alto//2)))
+        if self.tablero.limpio(): 
+            self.pantalla.blit(self.recursos["ganador"], self.recursos["ganador"].get_rect(center= (self.pantalla_ancho//2, self.pantalla_alto//2)))
         pygame.display.flip()
-        reloj.tick(60)
 
-    
-
-    pygame.quit()
-    return
-
+juego = Juego()
 if __name__ == "__main__":
-    main()
+    juego.bucle_principal()
