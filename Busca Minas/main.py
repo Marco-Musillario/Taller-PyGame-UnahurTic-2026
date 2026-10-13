@@ -1,7 +1,6 @@
 import pygame, random
 
 generador = random.Random()
-generador.seed(0)
 
 class Casilla:
     def __init__(self):
@@ -56,7 +55,7 @@ class Tablero:
 
         # Game over
         if self.casillas[_x][_y].mina:
-            self.explotar_minas()
+            self.explosion = True
             return
 
         # Si hay alguna mina cerca, solo se revela esta casilla
@@ -68,14 +67,40 @@ class Tablero:
             if x >= 0 and x < self.columnas:
                 for y in range(_y-1, _y+2):
                     if y >= 0 and y < self.filas:
-                        self.descubrir_casilla(x,y)     
+                        self.descubrir_casilla(x,y)    
 
-    def explotar_minas(self) -> None:
+    def descubrir_adyacentes(self, _x: int, _y: int) -> None:
+        casilla = self.casillas[_x][_y]
+
+        if not casilla.descubierta:
+            return
+
+        banderas: int = 0
+
+        for x in range(_x - 1, _x + 2):
+            if x >= 0 and x < self.columnas:
+                for y in range(_y - 1, _y + 2):
+                    if y >= 0 and y < self.filas:
+                        if self.casillas[x][y].marcada:
+                            banderas += 1
+
+        if banderas != casilla.proximidades:
+            return
+
+        for x in range(_x - 1, _x + 2):
+            if x >= 0 and x < self.columnas:
+                for y in range(_y - 1, _y + 2):
+                    if y >= 0 and y < self.filas:
+                        if not self.casillas[x][y].marcada:
+                            self.descubrir_casilla(x, y) 
+
+    def explotar_minas(self, sonido : pygame.Sound) -> None:
         for x in range(self.columnas):
             for y in range(self.filas):
-                if self.casillas[x][y].mina and not self.casillas[x][y].marcada:
+                if self.casillas[x][y].mina:
                     self.casillas[x][y].descubierta = True
-        self.explosion = True
+                    sonido.play()
+        self.explosion = False
 
     def cantidad_descubiertas_limpias(self) -> int:
         cantidad : int = 0
@@ -134,6 +159,9 @@ class Juego:
             fondo : pygame.Surface = pygame.Surface( size= (32,32), flags= pygame.SRCALPHA)
             fondo.blit(numero_imagen, numero_imagen.get_rect(center=(self.tamanio_de_casilla // 2 , self.tamanio_de_casilla // 2)))
             self.recursos[str(numero)] = fondo.convert_alpha()
+
+        self.sonidos : dict[str, pygame.Sound]= {}
+        self.sonidos["Explosion"] = pygame.mixer.Sound("assets/explosion.mp3")
     
         pygame.display.set_icon(self.recursos["bomba"])
         
@@ -161,7 +189,11 @@ class Juego:
                     case 1:
                         if not self.tablero.generado:
                             self.tablero.generar_bombas((mx,my))
-                        self.tablero.descubrir_casilla(mx, my)
+                        casilla = self.tablero.casillas[mx][my]
+                        if casilla.descubierta:
+                            self.tablero.descubrir_adyacentes(mx, my)
+                        else:
+                            self.tablero.descubrir_casilla(mx, my)
                     case 3:
                         self.tablero.marcar_casilla(mx, my)
 
@@ -173,7 +205,7 @@ class Juego:
 
     def logica(self):
         if self.tablero.explosion:
-            self.tablero.explotar_minas()
+            self.tablero.explotar_minas(self.sonidos["Explosion"])
             self.game_over = True
 
     def dibujar(self):
