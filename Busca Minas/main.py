@@ -18,6 +18,7 @@ class Tablero:
         self.explosion : bool = False
         self.generado : bool = False
         self.casillas_limpias : int = (self.filas * self.columnas) - self.cantidad_total_de_bombas
+        self.cantidad_marcadas : int = 0
 
         for c in range(columnas):
             columna : list[Casilla] = []
@@ -45,7 +46,12 @@ class Tablero:
 
     def marcar_casilla(self, x : int, y : int):
         if not self.casillas[x][y].descubierta:
-            self.casillas[x][y].marcada = not self.casillas[x][y].marcada
+            if self.casillas[x][y].marcada:
+                self.casillas[x][y].marcada = False
+                self.cantidad_marcadas -= 1
+            else:
+                self.casillas[x][y].marcada = True
+                self.cantidad_marcadas += 1
 
     def descubrir_casilla(self, _x : int, _y : int) -> None:
         if self.casillas[_x][_y].marcada or self.casillas[_x][_y].descubierta:
@@ -121,13 +127,15 @@ class Juego:
     
         self.filas : int = 16
         self.columnas : int = 16
-        self.cantidad_de_bombas : int = 40
+        self.cantidad_de_bombas : int = 4
     
         self.tamanio_de_casilla : int = 32
         self.pantalla_ancho : int = self.filas * self.tamanio_de_casilla
         self.pantalla_alto : int = self.columnas * self.tamanio_de_casilla
 
-        pygame.display.set_caption("Busca minas")
+        self.tiempo : float = 0
+
+        pygame.display.set_caption("Busca minas | 40 | 000")
         self.pantalla = pygame.display.set_mode((self.pantalla_ancho, self.pantalla_alto))
 
         self.recursos : dict[str, pygame.Surface ]= {}
@@ -175,7 +183,7 @@ class Juego:
             self.input()
             self.logica()
             self.dibujar()
-            self.reloj.tick(60)
+            self.tiempo += self.reloj.tick(60)
         pygame.quit()
 
     def input(self):
@@ -187,6 +195,8 @@ class Juego:
                 my : int = event.pos[1] // 32
                 match event.button:
                     case 1:
+                        if self.game_over or self.tablero.limpio():
+                            continue
                         if not self.tablero.generado:
                             self.tablero.generar_bombas((mx,my))
                         casilla = self.tablero.casillas[mx][my]
@@ -202,15 +212,20 @@ class Juego:
         if keys[pygame.K_r] and (self.game_over or self.tablero.limpio()):
             self.tablero = Tablero(self.filas, self.columnas, self.cantidad_de_bombas)
             self.game_over = False
+            self.tiempo = 0
 
     def logica(self):
         if self.tablero.explosion:
             self.tablero.explotar_minas(self.sonidos["Explosion"])
             self.game_over = True
 
+    def actualizar_titulo(self):
+        if not (self.game_over or self.tablero.limpio()):
+            pygame.display.set_caption("Busca Minas | {faltantes} | {tiempo:03} ".format(faltantes = self.cantidad_de_bombas - self.tablero.cantidad_marcadas, tiempo= self.tiempo // 1000)) 
+
     def dibujar(self):
         self.pantalla.fill("purple")
-        
+        self.actualizar_titulo()
         for c in range(self.columnas):
                 for f in range(self.filas):
 
