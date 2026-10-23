@@ -10,6 +10,8 @@ class Casilla:
 
 class Tablero:
     def __init__(self, filas : int, columnas : int, cantidad_de_bombas : int) -> None:
+        if cantidad_de_bombas >= filas * columnas:
+            raise ValueError("Hay más bombas que casillas disponibles")
         self.filas : int = filas
         self.columnas : int = columnas
         self.cantidad_total_de_bombas : int = cantidad_de_bombas
