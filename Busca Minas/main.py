@@ -34,15 +34,15 @@ class Tablero:
             if not self.casillas[x][y].mina and (x,y) != evitar:
                 self.casillas[x][y].mina = True
                 self.generar_proximidades(x,y)
-                cantidad_puesta = cantidad_puesta + 1
+                cantidad_puesta += 1
         self.generado = True
                 
-    def generar_proximidades(self, _x : int, _y : int) -> None:
-        for x in range(_x-1, _x+2):
-            if x >= 0 and x < self.columnas:
-                for y in range(_y-1, _y+2):
-                    if y >= 0 and y < self.filas:
-                        self.casillas[x][y].proximidades = self.casillas[x][y].proximidades + 1
+    def generar_proximidades(self, x : int, y : int) -> None:
+        for _x in range(x-1, x+2):
+            if _x >= 0 and _x < self.columnas:
+                for _y in range(y-1, y+2):
+                    if _y >= 0 and _y < self.filas:
+                        self.casillas[_x][_y].proximidades += 1
 
     def marcar_casilla(self, x : int, y : int):
         if not self.casillas[x][y].descubierta:
@@ -53,59 +53,59 @@ class Tablero:
                 self.casillas[x][y].marcada = True
                 self.cantidad_marcadas += 1
 
-    def descubrir_casilla(self, _x : int, _y : int) -> None:
-        if self.casillas[_x][_y].marcada or self.casillas[_x][_y].descubierta:
+    def descubrir_casilla(self, x : int, y : int) -> None:
+        if self.casillas[x][y].marcada or self.casillas[x][y].descubierta:
             return 
         
-        self.casillas[_x][_y].descubierta = True
+        self.casillas[x][y].descubierta = True
 
         # Game over
-        if self.casillas[_x][_y].mina:
+        if self.casillas[x][y].mina:
             self.explosion = True
             return
 
         # Si hay alguna mina cerca, solo se revela esta casilla
-        if self.casillas[_x][_y].proximidades != 0:
+        if self.casillas[x][y].proximidades != 0:
             return
 
         # Si no hay minas cerca, se revelan las casillas vecinas
-        for x in range(_x-1, _x+2):
-            if x >= 0 and x < self.columnas:
-                for y in range(_y-1, _y+2):
-                    if y >= 0 and y < self.filas:
-                        self.descubrir_casilla(x,y)    
+        for _x in range(x-1, x+2):
+            if _x >= 0 and _x < self.columnas:
+                for _y in range(y-1, y+2):
+                    if _y >= 0 and _y < self.filas:
+                        self.descubrir_casilla(_x,_y)    
 
-    def descubrir_adyacentes(self, _x: int, _y: int) -> None:
-        casilla = self.casillas[_x][_y]
+    def descubrir_adyacentes(self, x: int, y: int) -> None:
+        casilla = self.casillas[x][y]
 
         if not casilla.descubierta:
             return
 
         banderas: int = 0
 
-        for x in range(_x - 1, _x + 2):
-            if x >= 0 and x < self.columnas:
-                for y in range(_y - 1, _y + 2):
-                    if y >= 0 and y < self.filas:
-                        if self.casillas[x][y].marcada:
+        for _x in range(x - 1, x + 2):
+            if _x >= 0 and _x < self.columnas:
+                for _y in range(y - 1, y + 2):
+                    if _y >= 0 and _y < self.filas:
+                        if self.casillas[_x][_y].marcada:
                             banderas += 1
 
         if banderas != casilla.proximidades:
             return
 
-        for x in range(_x - 1, _x + 2):
-            if x >= 0 and x < self.columnas:
-                for y in range(_y - 1, _y + 2):
-                    if y >= 0 and y < self.filas:
-                        if not self.casillas[x][y].marcada:
-                            self.descubrir_casilla(x, y) 
+        for _x in range(x - 1, x + 2):
+            if _x >= 0 and _x < self.columnas:
+                for _y in range(y - 1, y + 2):
+                    if _y >= 0 and _y < self.filas:
+                        if not self.casillas[_x][_y].marcada:
+                            self.descubrir_casilla(_x, _y) 
 
     def explotar_minas(self, sonido : pygame.Sound) -> None:
         for x in range(self.columnas):
             for y in range(self.filas):
                 if self.casillas[x][y].mina:
                     self.casillas[x][y].descubierta = True
-                    sonido.play()
+        sonido.play()
         self.explosion = False
 
     def cantidad_descubiertas_limpias(self) -> int:
@@ -113,7 +113,7 @@ class Tablero:
         for columna in self.casillas:
             for casilla in columna:
                 if casilla.descubierta and not casilla.mina:
-                    cantidad = cantidad + 1
+                    cantidad += 1
         return cantidad
 
     def limpio(self) -> bool:
@@ -127,7 +127,7 @@ class Juego:
     
         self.filas : int = 16
         self.columnas : int = 16
-        self.cantidad_de_bombas : int = 4
+        self.cantidad_de_bombas : int = 40
     
         self.tamanio_de_casilla : int = 32
         self.pantalla_ancho : int = self.filas * self.tamanio_de_casilla
@@ -145,31 +145,32 @@ class Juego:
         self.recursos["font"] = pygame.font.Font("assets/bytebounce.medium.ttf", size=50)
         self.recursos["font2"] = pygame.font.Font("assets/bytebounce.medium.ttf", size=20)
     
-        self.recursos["casilla_cubierta_1"] = pygame.Surface((32,32)).convert()
-        self.recursos["casilla_cubierta_1"].fill("darkolivegreen3")
-        self.recursos["casilla_cubierta_2"] = pygame.Surface((32,32)).convert()
-        self.recursos["casilla_cubierta_2"].fill("darkolivegreen2")
+        self.recursos["casilla_cubierta_0"] = pygame.Surface((self.tamanio_de_casilla,self.tamanio_de_casilla)).convert()
+        self.recursos["casilla_cubierta_0"].fill("darkolivegreen3")
+        self.recursos["casilla_cubierta_1"] = pygame.Surface((self.tamanio_de_casilla,self.tamanio_de_casilla)).convert()
+        self.recursos["casilla_cubierta_1"].fill("darkolivegreen2")
         
-        self.recursos["casilla_descubierta_1"] = pygame.Surface((32,32)).convert()
-        self.recursos["casilla_descubierta_1"].fill("burlywood3")
-        self.recursos["casilla_descubierta_2"] = pygame.Surface((32,32)).convert()
-        self.recursos["casilla_descubierta_2"].fill("burlywood2")
+        self.recursos["casilla_descubierta_0"] = pygame.Surface((self.tamanio_de_casilla,self.tamanio_de_casilla)).convert()
+        self.recursos["casilla_descubierta_0"].fill("burlywood3")
+        self.recursos["casilla_descubierta_1"] = pygame.Surface((self.tamanio_de_casilla,self.tamanio_de_casilla)).convert()
+        self.recursos["casilla_descubierta_1"].fill("burlywood2")
     
         self.recursos["game_over"]= pygame.image.load("assets/game_over.png").convert()
         self.recursos["ganador"]= pygame.image.load("assets/ganador.png").convert()
     
         colores_numeros : list[str] = ["blue", "green", "red", "blue4", "darkred", "cyan4", "black", "dimgrey"]
-        self.recursos["0"] = pygame.Surface((32,32), pygame.SRCALPHA).convert_alpha()
+        self.recursos["0"] = pygame.Surface((self.tamanio_de_casilla,self.tamanio_de_casilla), pygame.SRCALPHA).convert_alpha()
     
         for i in range(8):
             numero : int = i + 1
             numero_imagen : pygame.Surface = self.recursos["font"].render( text= str(numero), antialias= True, color= colores_numeros[i])
-            fondo : pygame.Surface = pygame.Surface( size= (32,32), flags= pygame.SRCALPHA)
+            fondo : pygame.Surface = pygame.Surface( size= (self.tamanio_de_casilla,self.tamanio_de_casilla), flags= pygame.SRCALPHA)
             fondo.blit(numero_imagen, numero_imagen.get_rect(center=(self.tamanio_de_casilla // 2 , self.tamanio_de_casilla // 2)))
             self.recursos[str(numero)] = fondo.convert_alpha()
 
         self.sonidos : dict[str, pygame.Sound]= {}
         self.sonidos["Explosion"] = pygame.mixer.Sound("assets/explosion.mp3")
+        self.sonidos["Explosion"].set_volume(0.05)
     
         pygame.display.set_icon(self.recursos["bomba"])
         
@@ -191,8 +192,8 @@ class Juego:
             if event.type == pygame.QUIT:
                 self.running : bool = False
             if event.type == pygame.MOUSEBUTTONDOWN and not self.game_over:
-                mx : int = event.pos[0] // 32
-                my : int = event.pos[1] // 32
+                mx : int = event.pos[0] // self.tamanio_de_casilla
+                my : int = event.pos[1] // self.tamanio_de_casilla
                 match event.button:
                     case 1:
                         if self.game_over or self.tablero.limpio():
@@ -229,20 +230,21 @@ class Juego:
         for c in range(self.columnas):
                 for f in range(self.filas):
 
-                    coordenadas : tuple[int,int] = (c*32, f*32)
-                    paridad : bool = ((c+f)%2 == 0)
-                    if not self.tablero.casillas[c][f].descubierta :
-                        terreno : pygame.Surface = self.recursos["casilla_cubierta_1"] if paridad else self.recursos["casilla_cubierta_2"]
-                        self.pantalla.blit(terreno, coordenadas)
-                        if self.tablero.casillas[c][f].marcada:
-                            self.pantalla.blit(self.recursos["marcador"], coordenadas)
-                    else:
-                        terreno : pygame.Surface = self.recursos["casilla_descubierta_1"] if paridad else self.recursos["casilla_descubierta_2"]
-                        self.pantalla.blit(terreno, coordenadas)
-                        if self.tablero.casillas[c][f].mina:
-                            self.pantalla.blit(self.recursos["bomba"], coordenadas)
+                    coordenadas : tuple[int,int] = (c*self.tamanio_de_casilla, f*self.tamanio_de_casilla)
+                    casilla = self.tablero.casillas[c][f]
+                    archivo : str = "casilla_" + ("descubierta_" if casilla.descubierta else "cubierta_" ) + str((c+f)%2)
+                    terreno : pygame.Surface = self.recursos[archivo]
+                    self.pantalla.blit(terreno, coordenadas)
+                    if casilla.marcada:
+                        archivo = "marcador"
+                    elif casilla.descubierta:
+                        if casilla.mina:
+                            archivo = "bomba"
                         else:
-                            self.pantalla.blit(self.recursos[str(self.tablero.casillas[c][f].proximidades)], coordenadas)
+                            archivo = str(casilla.proximidades)
+                    especial : pygame.Surface = self.recursos[archivo]
+                    self.pantalla.blit(especial ,coordenadas)
+
         if self.game_over:
             self.pantalla.blit(self.recursos["game_over"], self.recursos["game_over"].get_rect(center= (self.pantalla_ancho//2, self.pantalla_alto//2)))
         if self.tablero.limpio(): 
