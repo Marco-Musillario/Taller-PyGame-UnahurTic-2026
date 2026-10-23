@@ -73,13 +73,11 @@ class Juego:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 self.running : bool = False
-            if event.type == pygame.MOUSEBUTTONDOWN and not self.game_over:
+            if event.type == pygame.MOUSEBUTTONDOWN and not (self.game_over or self.tablero.limpio()):
                 mx : int = event.pos[0] // self.tamanio_de_casilla
                 my : int = event.pos[1] // self.tamanio_de_casilla
                 match event.button:
                     case 1:
-                        if self.game_over or self.tablero.limpio():
-                            continue
                         if not self.tablero.generado:
                             self.tablero.generar_bombas((mx,my))
                         casilla = self.tablero.casillas[mx][my]
