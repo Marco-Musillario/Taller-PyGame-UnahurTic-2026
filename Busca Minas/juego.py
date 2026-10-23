@@ -12,8 +12,8 @@ class Juego:
         self.cantidad_de_bombas : int = 40
     
         self.tamanio_de_casilla : int = 32
-        self.pantalla_ancho : int = self.filas * self.tamanio_de_casilla
-        self.pantalla_alto : int = self.columnas * self.tamanio_de_casilla
+        self.pantalla_ancho : int = self.columnas * self.tamanio_de_casilla
+        self.pantalla_alto : int = self.filas * self.tamanio_de_casilla
 
         self.tiempo : float = 0
 
