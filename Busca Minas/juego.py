@@ -6,6 +6,7 @@ class Juego:
         pygame.init()
         self.running : bool = True
         self.game_over : bool = False
+        self.victoria : bool = False
     
         self.filas : int = 16
         self.columnas : int = 16
@@ -72,7 +73,7 @@ class Juego:
             self.logica()
             self.dibujar()
             milisegundos_del_frame = self.reloj.tick(60)
-            if self.tablero.generado and not (self.game_over or self.tablero.limpio()):
+            if self.tablero.generado and not (self.game_over or self.victoria):
                 self.tiempo += milisegundos_del_frame
             # En caso de que sea muy complejo, se puede usar la versión comentada
             # self.tiempo += self.reloj.tick(60)
@@ -82,7 +83,7 @@ class Juego:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 self.running = False
-            if event.type == pygame.MOUSEBUTTONDOWN and not (self.game_over or self.tablero.limpio()):
+            if event.type == pygame.MOUSEBUTTONDOWN and not (self.game_over or self.victoria):
                 mx : int = event.pos[0] // self.tamanio_de_casilla
                 my : int = event.pos[1] // self.tamanio_de_casilla
                 match event.button:
@@ -99,7 +100,7 @@ class Juego:
 
         keys = pygame.key.get_just_pressed()
         
-        if keys[pygame.K_r] and (self.game_over or self.tablero.limpio()):
+        if keys[pygame.K_r] and (self.game_over or self.victoria):
             self.tablero = Tablero(self.filas, self.columnas, self.cantidad_de_bombas)
             self.game_over = False
             self.tiempo = 0
@@ -108,9 +109,10 @@ class Juego:
         if self.tablero.explosion:
             self.tablero.explotar_minas(self.sonidos["Explosion"])
             self.game_over = True
+        self.victoria = self.tablero.limpio()
 
     def actualizar_titulo(self):
-        if self.game_over or self.tablero.limpio():
+        if self.game_over or self.victoria:
             return
         faltantes = self.cantidad_de_bombas - self.tablero.cantidad_marcadas
         segundos = int(self.tiempo // 1000)
@@ -137,7 +139,7 @@ class Juego:
                         self.pantalla.blit(self.recursos[simbolo], coordenadas)
         if self.game_over:
             self.pantalla.blit(self.recursos["game_over"], self.recursos["game_over"].get_rect(center= (self.pantalla_ancho//2, self.pantalla_alto//2)))
-        elif self.tablero.limpio(): 
+        elif self.victoria: 
             self.pantalla.blit(self.recursos["ganador"], self.recursos["ganador"].get_rect(center= (self.pantalla_ancho//2, self.pantalla_alto//2)))
         pygame.display.flip()
 
