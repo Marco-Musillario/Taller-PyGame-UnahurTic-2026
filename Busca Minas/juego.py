@@ -24,7 +24,9 @@ class Juego:
 
         self.recursos["bomba"] = pygame.image.load("assets/Bomba.png").convert_alpha()
         self.recursos["marcador"] = pygame.image.load("assets/Marcador.png").convert_alpha()
-        self.recursos["font"] = pygame.font.Font("assets/bytebounce.medium.ttf", size=50)
+
+        # self.recursos["font"] = pygame.font.Font("assets/bytebounce.medium.ttf", size=50)
+        self.fuente : pygame.font.Font = pygame.font.Font("assets/bytebounce.medium.ttf", size=50)
         # No se usa la segunda fuente, así que solo la comento
         # self.recursos["font2"] = pygame.font.Font("assets/bytebounce.medium.ttf", size=20)
     
@@ -46,7 +48,8 @@ class Juego:
     
         for i in range(8):
             numero : int = i + 1
-            numero_imagen : pygame.Surface = self.recursos["font"].render( text= str(numero), antialias= True, color= colores_numeros[i])
+            # numero_imagen : pygame.Surface = self.recursos["font"].render( text= str(numero), antialias= True, color= colores_numeros[i])
+            numero_imagen : pygame.Surface = self.fuente.render( text= str(numero), antialias= True, color= colores_numeros[i])
             fondo : pygame.Surface = pygame.Surface( size= (self.tamanio_de_casilla,self.tamanio_de_casilla), flags= pygame.SRCALPHA)
             fondo.blit(numero_imagen, numero_imagen.get_rect(center=(self.tamanio_de_casilla // 2 , self.tamanio_de_casilla // 2)))
             self.recursos[str(numero)] = fondo.convert_alpha()
