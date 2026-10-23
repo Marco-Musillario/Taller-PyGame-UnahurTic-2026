@@ -66,7 +66,11 @@ class Juego:
             self.input()
             self.logica()
             self.dibujar()
-            self.tiempo += self.reloj.tick(60)
+            milisegundos_del_frame = self.reloj.tick(60)
+            if self.tablero.generado and not (self.game_over or self.tablero.limpio()):
+                self.tiempo += milisegundos_del_frame
+            # En caso de que sea muy complejo, se puede usar la versión comentada
+            # self.tiempo += self.reloj.tick(60)
         pygame.quit()
 
     def input(self):
