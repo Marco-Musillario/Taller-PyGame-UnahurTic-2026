@@ -17,7 +17,6 @@ class Juego:
 
         self.tiempo : float = 0
 
-        pygame.display.set_caption("Busca minas | 40 | 000")
         self.pantalla = pygame.display.set_mode((self.pantalla_ancho, self.pantalla_alto))
 
         self.recursos : dict[str, pygame.Surface ]= {}
@@ -59,6 +58,7 @@ class Juego:
         self.reloj = pygame.time.Clock()
     
         self.tablero : Tablero = Tablero(self.filas, self.columnas, self.cantidad_de_bombas)
+        self.actualizar_titulo()
         return
 
     def bucle_principal(self):
@@ -101,8 +101,12 @@ class Juego:
             self.game_over = True
 
     def actualizar_titulo(self):
-        if not (self.game_over or self.tablero.limpio()):
-            pygame.display.set_caption("Busca Minas | {faltantes} | {tiempo:03} ".format(faltantes = self.cantidad_de_bombas - self.tablero.cantidad_marcadas, tiempo= self.tiempo // 1000)) 
+        if self.game_over or self.tablero.limpio():
+            return
+        faltantes = self.cantidad_de_bombas - self.tablero.cantidad_marcadas
+        segundos = int(self.tiempo // 1000)
+        pygame.display.set_caption(f"Busca Minas | {faltantes} | {segundos:03}")
+
 
     def dibujar(self):
         self.pantalla.fill("purple")
