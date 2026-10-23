@@ -11,6 +11,7 @@ class Juego:
         self.columnas : int = 16
         self.cantidad_de_bombas : int = 40
     
+        self.titulo_actual : str = ""
         self.tamanio_de_casilla : int = 32
         self.pantalla_ancho : int = self.columnas * self.tamanio_de_casilla
         self.pantalla_alto : int = self.filas * self.tamanio_de_casilla
@@ -24,7 +25,8 @@ class Juego:
         self.recursos["bomba"] = pygame.image.load("assets/Bomba.png").convert_alpha()
         self.recursos["marcador"] = pygame.image.load("assets/Marcador.png").convert_alpha()
         self.recursos["font"] = pygame.font.Font("assets/bytebounce.medium.ttf", size=50)
-        self.recursos["font2"] = pygame.font.Font("assets/bytebounce.medium.ttf", size=20)
+        # No se usa la segunda fuente, así que solo la comento
+        # self.recursos["font2"] = pygame.font.Font("assets/bytebounce.medium.ttf", size=20)
     
         self.recursos["casilla_cubierta_0"] = pygame.Surface((self.tamanio_de_casilla,self.tamanio_de_casilla)).convert()
         self.recursos["casilla_cubierta_0"].fill("darkolivegreen3")
@@ -63,7 +65,7 @@ class Juego:
 
     def bucle_principal(self):
         while self.running:
-            self.input()
+            self.procesar_eventos()
             self.logica()
             self.dibujar()
             milisegundos_del_frame = self.reloj.tick(60)
@@ -73,7 +75,7 @@ class Juego:
             # self.tiempo += self.reloj.tick(60)
         pygame.quit()
 
-    def input(self):
+    def procesar_eventos(self):
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 self.running : bool = False
@@ -109,7 +111,10 @@ class Juego:
             return
         faltantes = self.cantidad_de_bombas - self.tablero.cantidad_marcadas
         segundos = int(self.tiempo // 1000)
-        pygame.display.set_caption(f"Busca Minas | {faltantes} | {segundos:03}")
+        titulo = f"Busca Minas | {faltantes} | {segundos:03}"
+        if titulo != self.titulo_actual:
+            pygame.display.set_caption(titulo)
+            self.titulo_actual = titulo
 
 
     def dibujar(self):
