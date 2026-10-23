@@ -78,7 +78,7 @@ class Juego:
     def procesar_eventos(self):
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                self.running : bool = False
+                self.running = False
             if event.type == pygame.MOUSEBUTTONDOWN and not (self.game_over or self.tablero.limpio()):
                 mx : int = event.pos[0] // self.tamanio_de_casilla
                 my : int = event.pos[1] // self.tamanio_de_casilla
@@ -122,25 +122,19 @@ class Juego:
         self.actualizar_titulo()
         for c in range(self.columnas):
                 for f in range(self.filas):
-
                     coordenadas : tuple[int,int] = (c*self.tamanio_de_casilla, f*self.tamanio_de_casilla)
                     casilla = self.tablero.casillas[c][f]
                     archivo : str = "casilla_" + ("descubierta_" if casilla.descubierta else "cubierta_" ) + str((c+f)%2)
                     terreno : pygame.Surface = self.recursos[archivo]
                     self.pantalla.blit(terreno, coordenadas)
                     if casilla.marcada:
-                        archivo = "marcador"
+                        self.pantalla.blit(self.recursos["marcador"], coordenadas)
                     elif casilla.descubierta:
-                        if casilla.mina:
-                            archivo = "bomba"
-                        else:
-                            archivo = str(casilla.proximidades)
-                    especial : pygame.Surface = self.recursos[archivo]
-                    self.pantalla.blit(especial ,coordenadas)
-
+                        simbolo : str = "bomba" if casilla.mina else str(casilla.proximidades)
+                        self.pantalla.blit(self.recursos[simbolo], coordenadas)
         if self.game_over:
             self.pantalla.blit(self.recursos["game_over"], self.recursos["game_over"].get_rect(center= (self.pantalla_ancho//2, self.pantalla_alto//2)))
-        if self.tablero.limpio(): 
+        elif self.tablero.limpio(): 
             self.pantalla.blit(self.recursos["ganador"], self.recursos["ganador"].get_rect(center= (self.pantalla_ancho//2, self.pantalla_alto//2)))
         pygame.display.flip()
 
