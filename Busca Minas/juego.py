@@ -133,6 +133,6 @@ class Juego:
             self.pantalla.blit(self.recursos["ganador"], self.recursos["ganador"].get_rect(center= (self.pantalla_ancho//2, self.pantalla_alto//2)))
         pygame.display.flip()
 
-juego = Juego()
 if __name__ == "__main__":
+    juego = Juego()
     juego.bucle_principal()
