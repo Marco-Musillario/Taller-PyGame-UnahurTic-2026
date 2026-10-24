@@ -30,3 +30,15 @@ class Tablero:
             return 
         
         casilla.descubierta = True
+
+    def marcar_casilla(self, x : int, y : int):
+        casilla = self.casillas[x][y]
+        if casilla.descubierta:
+            return
+
+        if casilla.marcada:
+            casilla.marcada = False
+            self.cantidad_marcadas -= 1
+        else:
+            casilla.marcada = True
+            self.cantidad_marcadas += 1

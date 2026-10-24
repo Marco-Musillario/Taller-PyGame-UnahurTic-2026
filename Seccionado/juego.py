@@ -32,6 +32,8 @@ class Juego:
         self.recursos["casilla_descubierta_1"] = pygame.Surface((self.tamanio_de_casilla,self.tamanio_de_casilla)).convert()
         self.recursos["casilla_descubierta_1"].fill("burlywood2")
 
+        self.recursos["marcador"] = pygame.image.load("assets/Marcador.png").convert_alpha()
+
     def procesar_eventos(self):
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -42,6 +44,8 @@ class Juego:
                 match event.button:
                     case 1:
                         self.tablero.descubrir_casilla(mx, my)
+                    case 3:
+                        self.tablero.marcar_casilla(mx, my)
 
     def logica(self):
         pass
@@ -56,6 +60,8 @@ class Juego:
                 archivo : str = "casilla_" + ("descubierta_" if casilla.descubierta else "cubierta_" ) + str((c+f)%2)
                 terreno : pygame.Surface = self.recursos[archivo]
                 self.pantalla.blit(terreno, coordenadas)
+                if casilla.marcada:
+                    self.pantalla.blit(self.recursos["marcador"], coordenadas)
 
         pygame.display.flip()
 
