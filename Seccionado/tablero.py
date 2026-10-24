@@ -1,4 +1,6 @@
-import pygame
+import pygame, random
+
+generador = random.Random()
 
 class Casilla:
     def __init__(self):
@@ -42,3 +44,13 @@ class Tablero:
         else:
             casilla.marcada = True
             self.cantidad_marcadas += 1
+
+    def generar_bombas(self, evitar : tuple[int,int] ) -> None:
+            cantidad_puesta : int = 0
+            while cantidad_puesta < self.cantidad_total_de_bombas:
+                x : int = generador.randrange(self.columnas)
+                y : int = generador.randrange(self.filas)
+                if not self.casillas[x][y].mina and (x,y) != evitar:
+                    self.casillas[x][y].mina = True
+                    cantidad_puesta += 1
+            self.generado = True

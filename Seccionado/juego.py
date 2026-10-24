@@ -33,6 +33,7 @@ class Juego:
         self.recursos["casilla_descubierta_1"].fill("burlywood2")
 
         self.recursos["marcador"] = pygame.image.load("assets/Marcador.png").convert_alpha()
+        self.recursos["bomba"] = pygame.image.load("assets/Bomba.png").convert_alpha()
 
     def procesar_eventos(self):
         for event in pygame.event.get():
@@ -43,6 +44,8 @@ class Juego:
                 my : int = event.pos[1] // self.tamanio_de_casilla
                 match event.button:
                     case 1:
+                        if not self.tablero.generado:
+                            self.tablero.generar_bombas((mx,my))
                         self.tablero.descubrir_casilla(mx, my)
                     case 3:
                         self.tablero.marcar_casilla(mx, my)
@@ -62,6 +65,9 @@ class Juego:
                 self.pantalla.blit(terreno, coordenadas)
                 if casilla.marcada:
                     self.pantalla.blit(self.recursos["marcador"], coordenadas)
+                elif casilla.descubierta:
+                    simbolo : str = "bomba" 
+                    self.pantalla.blit(self.recursos[simbolo], coordenadas)
 
         pygame.display.flip()
 
