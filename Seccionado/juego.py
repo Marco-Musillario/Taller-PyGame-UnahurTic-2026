@@ -68,7 +68,11 @@ class Juego:
                     case 1:
                         if not self.tablero.generado:
                             self.tablero.generar_bombas((mx,my))
-                        self.tablero.descubrir_casilla(mx, my)
+                        casilla = self.tablero.casillas[mx][my]
+                        if casilla.descubierta:
+                            self.tablero.descubrir_adyacentes(mx, my)
+                        else:
+                            self.tablero.descubrir_casilla(mx, my)
                     case 3:
                         self.tablero.marcar_casilla(mx, my)
 

@@ -85,3 +85,27 @@ class Tablero:
                     self.casillas[x][y].descubierta = True
         sonido.play()
         self.explosion = False
+
+    def descubrir_adyacentes(self, x: int, y: int) -> None:
+        casilla = self.casillas[x][y]
+        if not casilla.descubierta:
+            return
+
+        banderas: int = 0
+
+        for _x in range(x - 1, x + 2):
+            if _x >= 0 and _x < self.columnas:
+                for _y in range(y - 1, y + 2):
+                    if _y >= 0 and _y < self.filas:
+                        if self.casillas[_x][_y].marcada:
+                            banderas += 1
+
+        if banderas != casilla.proximidades:
+            return
+
+        for _x in range(x - 1, x + 2):
+            if _x >= 0 and _x < self.columnas:
+                for _y in range(y - 1, y + 2):
+                    if _y >= 0 and _y < self.filas:
+                        if not self.casillas[_x][_y].marcada:
+                            self.descubrir_casilla(_x, _y) 
