@@ -77,3 +77,11 @@ class Tablero:
 
     def limpio(self) -> bool:
         return self.cantidad_descubiertas_limpias() == self.casillas_limpias
+
+    def explotar_minas(self, sonido : pygame.Sound) -> None:
+        for x in range(self.columnas):
+            for y in range(self.filas):
+                if self.casillas[x][y].mina:
+                    self.casillas[x][y].descubierta = True
+        sonido.play()
+        self.explosion = False

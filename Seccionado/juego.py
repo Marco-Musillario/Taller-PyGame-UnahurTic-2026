@@ -51,6 +51,11 @@ class Juego:
             fondo : pygame.Surface = pygame.Surface( size= (self.tamanio_de_casilla,self.tamanio_de_casilla), flags= pygame.SRCALPHA)
             fondo.blit(numero_imagen, numero_imagen.get_rect(center=(self.tamanio_de_casilla // 2 , self.tamanio_de_casilla // 2)))
             self.recursos[str(numero)] = fondo.convert_alpha()
+        
+        self.sonidos : dict[str, pygame.Sound]= {}
+
+        self.sonidos["Explosion"] = pygame.mixer.Sound("assets/explosion.mp3")
+        self.sonidos["Explosion"].set_volume(0.05)
 
     def procesar_eventos(self):
         for event in pygame.event.get():
@@ -75,6 +80,7 @@ class Juego:
 
     def logica(self):
         if self.tablero.explosion:
+            self.tablero.explotar_minas(self.sonidos["Explosion"])
             self.derrota = True
         self.victoria = self.tablero.limpio()
 
