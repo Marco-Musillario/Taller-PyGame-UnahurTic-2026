@@ -56,7 +56,7 @@ class Juego:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 self.activo = False
-            if event.type == pygame.MOUSEBUTTONDOWN:
+            if event.type == pygame.MOUSEBUTTONDOWN and not (self.derrota or self.victoria):
                 mx : int = event.pos[0] // self.tamanio_de_casilla
                 my : int = event.pos[1] // self.tamanio_de_casilla
                 match event.button:
@@ -66,6 +66,12 @@ class Juego:
                         self.tablero.descubrir_casilla(mx, my)
                     case 3:
                         self.tablero.marcar_casilla(mx, my)
+
+        keys = pygame.key.get_just_pressed()
+                
+        if keys[pygame.K_r] and (self.derrota or self.victoria):
+            self.tablero = Tablero(self.filas, self.columnas, self.cantidad_de_bombas)
+            self.derrota = False
 
     def logica(self):
         if self.tablero.explosion:
