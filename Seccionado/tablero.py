@@ -53,4 +53,12 @@ class Tablero:
                 if not self.casillas[x][y].mina and (x,y) != evitar:
                     self.casillas[x][y].mina = True
                     cantidad_puesta += 1
+                    self.generar_proximidades(x,y)
             self.generado = True
+
+    def generar_proximidades(self, x : int, y : int) -> None:
+        for _x in range(x-1, x+2):
+            if _x >= 0 and _x < self.columnas:
+                for _y in range(y-1, y+2):
+                    if _y >= 0 and _y < self.filas:
+                        self.casillas[_x][_y].proximidades += 1

@@ -21,6 +21,7 @@ class Juego:
         self.tablero = Tablero(self.filas, self.columnas, self.cantidad_de_bombas)
         
         self.recursos : dict[str, pygame.Surface ] = {}
+        self.fuente : pygame.font.Font = pygame.font.Font("assets/bytebounce.medium.ttf", size=50)
 
         self.recursos["casilla_cubierta_0"] = pygame.Surface((self.tamanio_de_casilla,self.tamanio_de_casilla)).convert()
         self.recursos["casilla_cubierta_0"].fill("darkolivegreen3")
@@ -34,6 +35,17 @@ class Juego:
 
         self.recursos["marcador"] = pygame.image.load("assets/Marcador.png").convert_alpha()
         self.recursos["bomba"] = pygame.image.load("assets/Bomba.png").convert_alpha()
+
+        colores_numeros : list[str] = ["blue", "green", "red", "blue4", "darkred", "cyan4", "black", "dimgrey"]
+        self.recursos["0"] = pygame.Surface((self.tamanio_de_casilla,self.tamanio_de_casilla), pygame.SRCALPHA).convert_alpha()
+    
+        for i in range(8):
+            numero : int = i + 1
+            
+            numero_imagen : pygame.Surface = self.fuente.render( text= str(numero), antialias= True, color= colores_numeros[i])
+            fondo : pygame.Surface = pygame.Surface( size= (self.tamanio_de_casilla,self.tamanio_de_casilla), flags= pygame.SRCALPHA)
+            fondo.blit(numero_imagen, numero_imagen.get_rect(center=(self.tamanio_de_casilla // 2 , self.tamanio_de_casilla // 2)))
+            self.recursos[str(numero)] = fondo.convert_alpha()
 
     def procesar_eventos(self):
         for event in pygame.event.get():
@@ -66,7 +78,7 @@ class Juego:
                 if casilla.marcada:
                     self.pantalla.blit(self.recursos["marcador"], coordenadas)
                 elif casilla.descubierta:
-                    simbolo : str = "bomba" 
+                    simbolo : str = "bomba" if casilla.mina else str(casilla.proximidades)
                     self.pantalla.blit(self.recursos[simbolo], coordenadas)
 
         pygame.display.flip()
