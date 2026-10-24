@@ -33,6 +33,10 @@ class Tablero:
         
         casilla.descubierta = True
 
+        if self.casillas[x][y].mina:
+            self.explosion = True
+            return
+
     def marcar_casilla(self, x : int, y : int):
         casilla = self.casillas[x][y]
         if casilla.descubierta:
@@ -62,3 +66,14 @@ class Tablero:
                 for _y in range(y-1, y+2):
                     if _y >= 0 and _y < self.filas:
                         self.casillas[_x][_y].proximidades += 1
+    
+    def cantidad_descubiertas_limpias(self) -> int:
+        cantidad : int = 0
+        for columna in self.casillas:
+            for casilla in columna:
+                if casilla.descubierta and not casilla.mina:
+                    cantidad += 1
+        return cantidad
+
+    def limpio(self) -> bool:
+        return self.cantidad_descubiertas_limpias() == self.casillas_limpias

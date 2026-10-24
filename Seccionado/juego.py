@@ -7,6 +7,8 @@ class Juego:
     def __init__(self) -> None:
         pygame.init()
         self.activo : bool = True
+        self.derrota : bool = False
+        self.victoria : bool = False
 
         self.filas : int = 16
         self.columnas : int = 16
@@ -36,6 +38,9 @@ class Juego:
         self.recursos["marcador"] = pygame.image.load("assets/Marcador.png").convert_alpha()
         self.recursos["bomba"] = pygame.image.load("assets/Bomba.png").convert_alpha()
 
+        self.recursos["cartel_derrota"]= pygame.image.load("assets/game_over.png").convert()
+        self.recursos["cartel_victoria"]= pygame.image.load("assets/ganador.png").convert()
+
         colores_numeros : list[str] = ["blue", "green", "red", "blue4", "darkred", "cyan4", "black", "dimgrey"]
         self.recursos["0"] = pygame.Surface((self.tamanio_de_casilla,self.tamanio_de_casilla), pygame.SRCALPHA).convert_alpha()
     
@@ -63,7 +68,9 @@ class Juego:
                         self.tablero.marcar_casilla(mx, my)
 
     def logica(self):
-        pass
+        if self.tablero.explosion:
+            self.derrota = True
+        self.victoria = self.tablero.limpio()
 
     def dibujar(self):
         self.pantalla.fill("purple")
@@ -80,6 +87,11 @@ class Juego:
                 elif casilla.descubierta:
                     simbolo : str = "bomba" if casilla.mina else str(casilla.proximidades)
                     self.pantalla.blit(self.recursos[simbolo], coordenadas)
+
+        if self.derrota:
+            self.pantalla.blit(self.recursos["cartel_derrota"], self.recursos["cartel_derrota"].get_rect(center= (self.pantalla_ancho//2, self.pantalla_alto//2)))
+        elif self.victoria: 
+            self.pantalla.blit(self.recursos["cartel_victoria"], self.recursos["cartel_victoria"].get_rect(center= (self.pantalla_ancho//2, self.pantalla_alto//2)))
 
         pygame.display.flip()
 
