@@ -14,7 +14,7 @@ class Juego:
         self.pantalla_ancho : int = self.columnas * self.tamanio_de_casilla
         self.pantalla_alto : int = self.filas * self.tamanio_de_casilla
         
-        self.pantalla = pygame.display.set_mode((self.pantalla_ancho, self.pantalla_alto))
+        self.pantalla : pygame.Surface = pygame.display.set_mode((self.pantalla_ancho, self.pantalla_alto))
 
     def procesar_eventos(self):
         for event in pygame.event.get():
@@ -25,7 +25,9 @@ class Juego:
         pass
 
     def dibujar(self):
-        pass
+        self.pantalla.fill("purple")
+
+        pygame.display.flip()
 
     def bucle_principal(self):
         while self.activo:
