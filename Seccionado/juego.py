@@ -36,6 +36,12 @@ class Juego:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 self.activo = False
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                mx : int = event.pos[0] // self.tamanio_de_casilla
+                my : int = event.pos[1] // self.tamanio_de_casilla
+                match event.button:
+                    case 1:
+                        self.tablero.descubrir_casilla(mx, my)
 
     def logica(self):
         pass

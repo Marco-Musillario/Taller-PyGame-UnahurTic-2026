@@ -23,3 +23,10 @@ class Tablero:
             for f in range(filas):
                 columna.append(Casilla())
             self.casillas.append(columna)
+
+    def descubrir_casilla(self, x : int, y : int) -> None:
+        casilla = self.casillas[x][y]
+        if casilla.marcada or casilla.descubierta:
+            return 
+        
+        casilla.descubierta = True
