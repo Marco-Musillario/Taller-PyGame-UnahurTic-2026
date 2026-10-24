@@ -14,9 +14,13 @@ class Juego:
         self.columnas : int = 16
         self.cantidad_de_bombas : int = 40
 
+        self.titulo_actual : str = ""
         self.tamanio_de_casilla : int = 32
         self.pantalla_ancho : int = self.columnas * self.tamanio_de_casilla
         self.pantalla_alto : int = self.filas * self.tamanio_de_casilla
+
+        self.tiempo : float = 0
+        self.reloj = pygame.time.Clock()
         
         self.pantalla : pygame.Surface = pygame.display.set_mode((self.pantalla_ancho, self.pantalla_alto))
 
@@ -57,6 +61,9 @@ class Juego:
         self.sonidos["Explosion"] = pygame.mixer.Sound("assets/explosion.mp3")
         self.sonidos["Explosion"].set_volume(0.05)
 
+        pygame.display.set_icon(self.recursos["bomba"])
+        self.actualizar_titulo()
+
     def procesar_eventos(self):
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -81,12 +88,14 @@ class Juego:
         if keys[pygame.K_r] and (self.derrota or self.victoria):
             self.tablero = Tablero(self.filas, self.columnas, self.cantidad_de_bombas)
             self.derrota = False
+            self.tiempo = 0
 
     def logica(self):
         if self.tablero.explosion:
             self.tablero.explotar_minas(self.sonidos["Explosion"])
             self.derrota = True
         self.victoria = self.tablero.limpio()
+        self.actualizar_titulo()
 
     def dibujar(self):
         self.pantalla.fill("purple")
@@ -116,7 +125,19 @@ class Juego:
             self.procesar_eventos()
             self.logica()
             self.dibujar()
+            if self.tablero.generado and not (self.derrota or self.victoria):
+                self.tiempo += self.reloj.tick(60)
         pygame.quit()
+
+    def actualizar_titulo(self):
+            if self.derrota or self.victoria:
+                return
+            diferencia = self.cantidad_de_bombas - self.tablero.cantidad_marcadas
+            segundos = int(self.tiempo // 1000)
+            titulo = f"Busca Minas | {diferencia} | {segundos:03}"
+            if titulo != self.titulo_actual:
+                pygame.display.set_caption(titulo)
+                self.titulo_actual = titulo
 
 if __name__ == "__main__":
     juego = Juego()
