@@ -37,6 +37,15 @@ class Tablero:
             self.explosion = True
             return
 
+        if casilla.proximidades != 0:
+            return
+
+        for _x in range(x-1, x+2):
+            if _x >= 0 and _x < self.columnas:
+                for _y in range(y-1, y+2):
+                    if _y >= 0 and _y < self.filas:
+                        self.descubrir_casilla(_x,_y)
+
     def marcar_casilla(self, x : int, y : int):
         casilla = self.casillas[x][y]
         if casilla.descubierta:
